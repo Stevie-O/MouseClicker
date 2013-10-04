@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "MouseJiggler.h"
+#include "MouseClicker.h"
 
 #define MAX_LOADSTRING 100
 

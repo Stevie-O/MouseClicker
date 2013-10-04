@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AF0301D0-4A01-469C-B542-530EA4046276}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>MouseJiggler</RootNamespace>
+    <RootNamespace>MouseClicker</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,25 +72,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="MouseJiggler.ico" />
+    <None Include="MouseClicker.ico" />
     <None Include="ReadMe.txt" />
     <None Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MouseJiggler.h" />
+    <ClInclude Include="MouseClicker.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MouseJiggler.cpp" />
+    <ClCompile Include="MouseClicker.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="MouseJiggler.rc" />
+    <ResourceCompile Include="MouseClicker.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

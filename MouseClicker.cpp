@@ -153,7 +153,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		child = CreateWindow(_T("BUTTON"), _T("Enabled"), WS_CHILD|BS_AUTOCHECKBOX|WS_VISIBLE|WS_TABSTOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, hWnd, (HMENU)IDC_JIGGLE_ENABLED, NULL, NULL);
 		SendDlgItemMessage(hWnd, IDC_JIGGLE_ENABLED, BM_SETCHECK, BST_CHECKED, 0);
 
-		SetTimer(hWnd, 101, 1000, NULL);
+		SetTimer(hWnd, 101, 1, NULL);
 		return DefWindowProc(hWnd, message, wParam, lParam);
 
 	case WM_SIZE:
@@ -167,10 +167,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (IsDlgButtonChecked(hWnd, IDC_JIGGLE_ENABLED)) 
 			{
+				if (GetKeyState(VK_CAPITAL) & 0x0001)
+				{
+					//OutputDebugString(_T("Sending LEFTDOWN\n"));
+					mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, NULL);
+					//OutputDebugString(_T("Sending LEFTUP\n"));
+					mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, NULL);
+				}
 				// the following messes with menus
 				//keybd_event(VK_F24, MapVirtualKey(VK_F24, MAPVK_VK_TO_VSC), 0, 0);
 				//keybd_event(VK_F24, MapVirtualKey(VK_F24, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, 0);
-				mouse_event(MOUSEEVENTF_MOVE, 0, 0, 0, 0);
+//				mouse_event(MOUSEEVENTF_MOVE, 0, 0, 0, 0);
 				// SetTimer creates periodic timers
 				// SetTimer(hWnd, 101, 1000, NULL);
 			} else {

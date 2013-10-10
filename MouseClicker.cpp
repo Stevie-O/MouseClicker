@@ -169,10 +169,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (GetKeyState(VK_CAPITAL) & 0x0001)
 				{
+					for (int i=0; i<1; i++) {
 					//OutputDebugString(_T("Sending LEFTDOWN\n"));
 					mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, NULL);
 					//OutputDebugString(_T("Sending LEFTUP\n"));
 					mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, NULL);
+					}
 				}
 				// the following messes with menus
 				//keybd_event(VK_F24, MapVirtualKey(VK_F24, MAPVK_VK_TO_VSC), 0, 0);

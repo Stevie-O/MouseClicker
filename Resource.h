@@ -18,6 +18,8 @@
 #define IDC_STATIC				-1
 #endif
 #define	IDC_JIGGLE_ENABLED		1000
+#define IDC_JIGGLE_RATE			1001
+#define IDC_JIGGLE_RATE_UPDOWN	1002
 
 // Next default values for new objects
 //

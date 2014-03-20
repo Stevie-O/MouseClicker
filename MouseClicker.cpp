@@ -83,7 +83,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_MOUSEJIGGLER));
 	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground	= (HBRUSH)(COLOR_3DFACE+1);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_MOUSEJIGGLER);
 	wcex.lpszClassName	= szWindowClass;
 	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -109,7 +109,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // Store instance handle in our global variable
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX),
-      CW_USEDEFAULT, 100, CW_USEDEFAULT, 50, NULL, NULL, hInstance, NULL);
+      CW_USEDEFAULT, CW_USEDEFAULT, 100, 100, NULL, NULL, hInstance, NULL);
 
    if (!hWnd)
    {
@@ -120,7 +120,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    GetWindowRect(hWnd, &rcScreen);
    GetClientRect(hWnd, &rcClient);
    rcScreen.right += 200 - rcClient.right;
-   rcScreen.bottom += 50 - rcClient.bottom;
+   rcScreen.bottom += 100 - rcClient.bottom;
    SetWindowPos(hWnd, NULL, 0, 0, rcScreen.right - rcScreen.left, rcScreen.bottom - rcScreen.top, SWP_NOMOVE|SWP_NOZORDER);
    UpdateWindow(hWnd);
 
@@ -143,23 +143,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 	RECT rc;
+	RECT rc2;
 	HWND child;
+	LONG dlgUnits;
+	WORD dlgBaseUnitsX; // average width, in pixels, of the system font
+	WORD dlgBaseUnitsY; // average height, in pixels, of the system font
+	int std_control_height;
+	int std_control_spacing;
 
 	switch (message)
 	{
 
 	case WM_CREATE:
 		GetClientRect(hWnd, &rc);
-		child = CreateWindow(_T("BUTTON"), _T("Enabled"), WS_CHILD|BS_AUTOCHECKBOX|WS_VISIBLE|WS_TABSTOP, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, hWnd, (HMENU)IDC_JIGGLE_ENABLED, NULL, NULL);
-		SendDlgItemMessage(hWnd, IDC_JIGGLE_ENABLED, BM_SETCHECK, BST_CHECKED, 0);
 
-		SetTimer(hWnd, 101, 1, NULL);
+		// http://msdn.microsoft.com/en-us/library/windows/desktop/ms645475%28v=vs.85%29.aspx
+		dlgUnits = GetDialogBaseUnits();
+		dlgBaseUnitsX = LOWORD(dlgUnits);
+		dlgBaseUnitsY = HIWORD(dlgUnits);
+		// each vertical base unit is 8 template units
+		// each horizontal base unit is 4 template units
+		std_control_height = MulDiv(14, dlgBaseUnitsY, 8);
+		// If controls aren't touching, have at least 3 DLUs (5 relative pixels) of space between them.
+		std_control_spacing = MulDiv(14 + 3, dlgBaseUnitsY, 8);
+
+		child = CreateWindow(_T("BUTTON"), _T("Enabled"), WS_CHILD|BS_AUTOCHECKBOX|WS_VISIBLE|WS_TABSTOP, rc.left, rc.top, rc.right - rc.left, std_control_height, hWnd, (HMENU)IDC_JIGGLE_ENABLED, NULL, NULL);
+		SendDlgItemMessage(hWnd, IDC_JIGGLE_ENABLED, BM_SETCHECK, BST_CHECKED, 0);
+		
+		child = CreateWindow(_T("EDIT"), _T("10"), WS_CHILD|WS_VISIBLE|WS_TABSTOP|WS_BORDER|ES_NUMBER, rc.left, rc.top + std_control_spacing, 100, std_control_height, hWnd, (HMENU)IDC_JIGGLE_RATE, NULL, NULL);
+
+		child = CreateWindow(UPDOWN_CLASS, NULL, WS_CHILD|WS_VISIBLE|WS_TABSTOP|UDS_ALIGNRIGHT|UDS_ARROWKEYS|UDS_AUTOBUDDY|UDS_NOTHOUSANDS|UDS_SETBUDDYINT, 0, 0, 0, 0, hWnd, (HMENU)IDC_JIGGLE_RATE_UPDOWN, NULL, NULL);
+		SendMessage(child, UDM_SETRANGE32, 10, 1000);
+		SendMessage(child, UDM_SETPOS32, 0, 10);
+
+		SetTimer(hWnd, 101, GetDlgItemInt(hWnd, IDC_JIGGLE_RATE, NULL, FALSE), NULL);
 		return DefWindowProc(hWnd, message, wParam, lParam);
 
 	case WM_SIZE:
 		GetClientRect(hWnd, &rc);
 		child = GetDlgItem(hWnd, IDC_JIGGLE_ENABLED);
-		SetWindowPos(child, NULL, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, SWP_NOZORDER);
+		GetWindowRect(child, &rc2);
+		MapWindowPoints(HWND_DESKTOP, hWnd, (LPPOINT)&rc2, 2);
+		SetWindowPos(child, NULL, rc.left, rc2.top, rc.right - rc.left, rc2.bottom - rc2.top, SWP_NOZORDER);
 		return DefWindowProc(hWnd, message, wParam, lParam);
 
 	case WM_TIMER:
@@ -206,10 +231,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDC_JIGGLE_ENABLED:
 			if (wmEvent == BN_CLICKED && IsDlgButtonChecked(hWnd, IDC_JIGGLE_ENABLED)) {
 				OutputDebugString(_T("Re-enabling timer\n"));
-				SetTimer(hWnd, 101, 1000, NULL);
+				SetTimer(hWnd, 101, GetDlgItemInt(hWnd, IDC_JIGGLE_RATE, NULL, FALSE), NULL);
 			}
 			break;
-
+		case IDC_JIGGLE_RATE:
+			if (wmEvent == EN_UPDATE && IsDlgButtonChecked(hWnd, IDC_JIGGLE_ENABLED)) {
+				SetTimer(hWnd, 101, GetDlgItemInt(hWnd, IDC_JIGGLE_RATE, NULL, FALSE), NULL);
+			}
+			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
